@@ -119,18 +119,30 @@ function compose() {
 }
 
 function show_email(email) {
+    let recipients = '';
+    email.recipients.forEach((recipient) => {
+        recipients += `<span>${recipient}</span>`
+    });
+
     document.querySelector('#emails-view').innerHTML = `
         <div class="email-card" data-id="${email.id}">
             <div class="email-header">
-                <span class="email-sender">${email.sender}</span>
-                <span class="enail-time">${email.timestamp}</span>
+                <span class="email-sender">Sender: ${email.sender}</span>
+                <span class="enail-time">Time: ${email.timestamp}</span>
+            </div>
+            
+            <div class="email-recipients">
+                <span>Recipients:</span>
+                ${recipients}
             </div>
             
             <div class="email-subject">
+                <span>Subject:</span>
                 ${email.subject}
             </div>
             
             <div class="email-body">
+                <span>Body:</span>
                 ${email.body}
             </div>
         </div>
