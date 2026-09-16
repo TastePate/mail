@@ -105,11 +105,11 @@ function emails(mailbox) {
         });
 }
 
-function compose() {
+function compose(recipient='', subject='', body='') {
     switchComposeEmailsView('compose');
-    document.querySelector('#compose-recipients').value = '';
-    document.querySelector('#compose-subject').value = '';
-    document.querySelector('#compose-body').value = '';
+    document.querySelector('#compose-recipients').value = recipient;
+    document.querySelector('#compose-subject').value = subject;
+    document.querySelector('#compose-body').value = body;
 
     document.querySelector('#compose-form').onsubmit = function (event) {
         event.preventDefault();
@@ -140,7 +140,7 @@ function show_email(email) {
         <div class="email-card" data-id="${email.id}">
             <div class="email-header">
                 <span class="email-sender">Sender: ${email.sender}</span>
-                <span class="enail-time">Time: ${email.timestamp}</span>
+                <span class="email-time">Time: ${email.timestamp}</span>
             </div>
             
             <div class="email-recipients">
@@ -157,8 +157,18 @@ function show_email(email) {
                 <span>Body:</span>
                 ${email.body}
             </div>
+            
+            <div class="email-reply">
+                <span><a href="#" id="reply-link">Reply</a></span>
+            </div> 
         </div>
     `;
+
+    document.querySelector('#reply-link').onclick = () => {
+        const subject = !email.subject.startsWith('Re:') ? 'Re: ' + email.subject : email.subject;
+        const body = `\n\n\nOn ${email.timestamp} ${email.sender} wrote:\n\n${email.body}`;
+        compose(email.sender, subject, body);
+    }
 
     fetch(`/emails/${email.id}`, {
         method: 'PUT',
