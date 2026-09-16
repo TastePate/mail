@@ -61,6 +61,9 @@ function emails(mailbox) {
                     })
                     .forEach((email_content) => {
                         const email_div = document.createElement('div');
+                        email_div.style.border = "2px solid black";
+                        email_div.style.display = 'flex';
+                        email_div.style.flexDirection = 'column';
 
                         const link = document.createElement('a');
                         link.textContent = email_content.body;
@@ -72,6 +75,17 @@ function emails(mailbox) {
                         });
 
                         email_div.append(link);
+                        email_div.insertAdjacentHTML('beforeend', `<span>${email_content.sender}</span>`);
+                        email_div.insertAdjacentHTML('beforeend', `<span>${email_content.timestamp}</span>`);
+                        let read;
+                        if (email_content.read) {
+                            read = 'Read';
+                        } else {
+                            read = "Didn't read";
+                        }
+
+                        email_div.insertAdjacentHTML('beforeend', `<span>${read}</span>`);
+
                         inbox_div.append(email_div);
                 });
             }
@@ -97,7 +111,7 @@ function compose() {
             })
         })
             .then(response => response.json())
-            .then(result => () => {
+            .then(result => {
                 console.log(result);
                 load_mailbox('compose');
             });
@@ -121,6 +135,13 @@ function show_email(email) {
             </div>
         </div>
     `;
+
+    fetch(`/emails/${email.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            read: true
+        })
+    });
 }
 
 function switchComposeEmailsView(mode) {
