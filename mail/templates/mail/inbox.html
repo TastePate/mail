@@ -30,6 +30,31 @@
             <input type="submit" class="btn btn-primary"/>
         </form>
     </div>
+
+    <template id="email-page-template">
+        <div class="email-page-container">
+            <h2 class="email-subject"></h2>
+
+            <div class="email-header">
+                <span class="email-sender"></span>
+                <span class="email-time"></span>
+            </div>
+
+            <div class="email-recipients">
+                <span><strong>Recipients:</strong></span>
+            </div>
+
+            <div class="email-body">
+                <span class="email-text"></span>
+            </div>
+
+            <div class="email-reply">
+                <span><a href="#" id="reply-link">Reply</a></span>
+            </div>
+
+            <div id="archive-link"></div>
+        </div>
+    </template>
 {% endblock %}
 
 {% block script %}

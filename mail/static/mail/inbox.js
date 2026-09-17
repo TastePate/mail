@@ -83,59 +83,48 @@ function render_email(email, mailbox) {
 }
 
 function render_email_page(email, is_from_sent=false) {
-    let recipients = '';
-    email.recipients.forEach((recipient) => {
-        recipients += `<span>${recipient}</span>`
+    const template = document.querySelector('#email-page-template');
+    const clone = template.content.cloneNode(true);
+
+    clone.querySelector('.email-subject').textContent = email.subject;
+    clone.querySelector('.email-sender').textContent = email.sender;
+    clone.querySelector('.email-time').textContent = email.timestamp;
+
+    email.recipients.forEach(recipient => {
+        const span = document.createElement('span');
+        span.textContent = recipient;
+
+        clone.querySelector('.email-recipients').append(span);
     });
 
-    document.querySelector('#emails-view').innerHTML = `
-        <div class="email-card" data-id="${email.id}">
-            <div class="email-header">
-                <span class="email-sender">Sender: ${email.sender}</span>
-                <span class="email-time">Time: ${email.timestamp}</span>
-            </div>
-            
-            <div class="email-recipients">
-                <span>Recipients:</span>
-                ${recipients}
-            </div>
-            
-            <div class="email-subject">
-                <span>Subject:</span>
-                ${email.subject}
-            </div>
-            
-            <div class="email-body">
-                <span>Body:</span>
-                ${email.body}
-            </div>
-            
-            <div class="email-reply">
-                <span><a href="#" id="reply-link">Reply</a></span>
-            </div> 
-            
-            <div id="archive-link"></div>
-        </div>
-    `;
+    clone.querySelector('.email-body').textContent = email.body;
+    clone.querySelector('.email-subject').textContent = email.subject;
 
     if (!is_from_sent) {
-        document.querySelector('#archive-link').append(create_archive_link(email));
+        clone.querySelector('#archive-link').append(create_archive_link(email));
     }
 
-    document.querySelector('#reply-link').onclick = (event) => {
+    clone.querySelector('#reply-link').onclick = (event) => {
         event.preventDefault();
         const subject = !email.subject.startsWith('Re:') ? 'Re: ' + email.subject : email.subject;
         const body = `\n\n\nOn ${email.timestamp} ${email.sender} wrote:\n\n${email.body}`;
         load_compose(email.sender, subject, body);
     }
 
-    fetch(`/emails/${email.id}`, {
+    document.querySelector('#emails-view').replaceChildren(clone);
+
+    set_email_as_read(email.id);
+}
+
+function set_email_as_read(email_id) {
+    fetch(`/emails/${email_id}`, {
         method: 'PUT',
         body: JSON.stringify({
             read: true
         })
     });
 }
+
 
 /*
 * Block for compose view. API, DOM, redner and so on
