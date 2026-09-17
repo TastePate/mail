@@ -17,11 +17,18 @@ function load_mailbox(mailbox) {
         `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
     if (mailbox === 'compose') {
-        compose();
+        switch_view('compose');
+        load_compose();
     } else {
+        switch_view('emails');
         load_emails(mailbox);
     }
 }
+
+
+/*
+* Block for emails view. API, DOM, redner and so on
+*/
 
 function get_emails(mailbox) {
     return fetch(`/emails/${mailbox}`)
@@ -75,42 +82,6 @@ function render_email(email, mailbox) {
     return email_div;
 }
 
-
-function compose(recipient='', subject='', body='') {
-    switch_view('compose');
-    document.querySelector('#compose-recipients').value = recipient;
-    document.querySelector('#compose-subject').value = subject;
-    document.querySelector('#compose-body').value = body;
-
-    document.querySelector('#compose-form').onsubmit = function (event) {
-        event.preventDefault();
-
-        fetch('/emails', {
-            method: 'POST',
-            body: JSON.stringify({
-                recipients: document.querySelector('#compose-recipients').value,
-                subject: document.querySelector('#compose-subject').value,
-                body: document.querySelector('#compose-body').value,
-            })
-        })
-            .then(response => {
-                return response.json().then(data => {
-                    return {
-                        ok: response.ok,
-                        data: data
-                    }
-                })
-            })
-            .then(result => {
-                if (!result.ok) {
-                    alert(result.data.error);
-                } else {
-                    load_mailbox('sent');
-                }
-            });
-    };
-}
-
 function render_email_page(email, is_from_sent=false) {
     let recipients = '';
     email.recipients.forEach((recipient) => {
@@ -146,7 +117,7 @@ function render_email_page(email, is_from_sent=false) {
             <div id="archive-link"></div>
         </div>
     `;
-    
+
     if (!is_from_sent) {
         document.querySelector('#archive-link').append(create_archive_link(email));
     }
@@ -155,7 +126,7 @@ function render_email_page(email, is_from_sent=false) {
         event.preventDefault();
         const subject = !email.subject.startsWith('Re:') ? 'Re: ' + email.subject : email.subject;
         const body = `\n\n\nOn ${email.timestamp} ${email.sender} wrote:\n\n${email.body}`;
-        compose(email.sender, subject, body);
+        load_compose(email.sender, subject, body);
     }
 
     fetch(`/emails/${email.id}`, {
@@ -164,6 +135,48 @@ function render_email_page(email, is_from_sent=false) {
             read: true
         })
     });
+}
+
+/*
+* Block for compose view. API, DOM, redner and so on
+*/
+
+function load_compose(recipient='', subject='', body='') {
+    document.querySelector('#compose-recipients').value = recipient;
+    document.querySelector('#compose-subject').value = subject;
+    document.querySelector('#compose-body').value = body;
+
+    document.querySelector('#compose-form').onsubmit = function (event) {
+        event.preventDefault();
+        const response = send_email(document.querySelector('#compose-recipients').value,
+                            document.querySelector('#compose-subject').value,
+                            document.querySelector('#compose-body').value);
+        response.then(result => {
+            if (result.ok) {
+                load_mailbox('sent');
+            } else {
+                alert(result.data.error);
+            }
+        });
+    };
+}
+
+function send_email(recipient, subject, body) {
+    return fetch('/emails', {
+            method: 'POST',
+            body: JSON.stringify({
+                recipients: recipient,
+                subject: subject,
+                body: body,
+            })
+        }).then(response => {
+            return response.json().then(data => {
+                return {
+                    ok: response.ok,
+                    data: data
+                }
+            })
+        });
 }
 
 function switch_view(mode) {
