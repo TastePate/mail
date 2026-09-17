@@ -12,8 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     load_mailbox('inbox');
 });
 
-
-
 function load_mailbox(mailbox) {
     document.querySelector('#emails-view').innerHTML =
         `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -21,56 +19,65 @@ function load_mailbox(mailbox) {
     if (mailbox === 'compose') {
         compose();
     } else {
-        inbox(mailbox);
+        load_emails(mailbox);
     }
 }
 
-function inbox(mailbox) {
-    switch_compose_emails_view('emails');
-    fetch(`/emails/${mailbox}`)
-        .then(response => response.json())
-        .then(emails => {
-            const inbox_div = document.createElement('div');
-            if (emails.length === 0) {
-                inbox_div.innerHTML = 'No emails!'
-            } else {
-                emails
-                    .forEach((email_content) => {
-                        const email_div = document.createElement('div');
-                        email_div.style.border = "2px solid black";
-                        email_div.style.display = 'flex';
-                        email_div.style.flexDirection = 'column';
-
-                        const link = document.createElement('a');
-                        link.textContent = email_content.subject;
-                        link.href = '#';
-                        link.addEventListener('click', event => {
-                           event.preventDefault();
-                           email_page(email_content, mailbox==='sent');
-                        });
-
-                        const archive_link = getArchiveLink(email_content);
-
-                        email_div.append(link);
-                        email_div.insertAdjacentHTML('beforeend', `<span>${email_content.sender}</span>`);
-                        email_div.insertAdjacentHTML('beforeend', `<span>${email_content.timestamp}</span>`);
-                        let read = email_content.read ? "Read" : "Didn't read";
-
-                        email_div.insertAdjacentHTML('beforeend', `<span>${read}</span>`);
-
-                        if (mailbox !== 'sent') {
-                            email_div.append(archive_link);
-                        }
-
-                        inbox_div.append(email_div);
-                });
-            }
-            document.querySelector('#emails-view').append(inbox_div);
-        });
+function get_emails(mailbox) {
+    return fetch(`/emails/${mailbox}`)
+        .then(response => response.json());
 }
 
+function load_emails(mailbox) {
+    get_emails(mailbox)
+        .then(emails => render_emails(mailbox, emails))
+}
+
+function render_emails(mailbox, emails) {
+    const inbox_div = document.createElement('div');
+
+    if (emails.length === 0) {
+        inbox_div.innerHTML = 'No emails!'
+    } else {
+        emails.forEach((email) => {
+            const render = render_email(email, mailbox);
+            inbox_div.append(render);
+        });
+    }
+
+    document.querySelector('#emails-view').append(inbox_div);
+}
+
+function render_email(email, mailbox) {
+    const email_div = document.createElement('div');
+
+    const link = document.createElement('a');
+    link.textContent = email.subject;
+    link.href = '#';
+    link.addEventListener('click', event => {
+       event.preventDefault();
+       render_email_page(email, mailbox==='sent');
+    });
+
+    const archive_link = create_archive_link(email);
+
+    email_div.append(link);
+    email_div.insertAdjacentHTML('beforeend', `<span>${email.sender}</span>`);
+    email_div.insertAdjacentHTML('beforeend', `<span>${email.timestamp}</span>`);
+    const read = email.read ? "Read" : "Didn't read";
+
+    email_div.insertAdjacentHTML('beforeend', `<span>${read}</span>`);
+
+    if (mailbox !== 'sent') {
+        email_div.append(archive_link);
+    }
+
+    return email_div;
+}
+
+
 function compose(recipient='', subject='', body='') {
-    switch_compose_emails_view('compose');
+    switch_view('compose');
     document.querySelector('#compose-recipients').value = recipient;
     document.querySelector('#compose-subject').value = subject;
     document.querySelector('#compose-body').value = body;
@@ -104,7 +111,7 @@ function compose(recipient='', subject='', body='') {
     };
 }
 
-function email_page(email, is_from_sent=false) {
+function render_email_page(email, is_from_sent=false) {
     let recipients = '';
     email.recipients.forEach((recipient) => {
         recipients += `<span>${recipient}</span>`
@@ -141,7 +148,7 @@ function email_page(email, is_from_sent=false) {
     `;
     
     if (!is_from_sent) {
-        document.querySelector('#archive-link').append(getArchiveLink(email));
+        document.querySelector('#archive-link').append(create_archive_link(email));
     }
 
     document.querySelector('#reply-link').onclick = (event) => {
@@ -159,7 +166,7 @@ function email_page(email, is_from_sent=false) {
     });
 }
 
-function switch_compose_emails_view(mode) {
+function switch_view(mode) {
     if (mode === 'emails') {
         document.querySelector('#emails-view').style.display = 'block';
         document.querySelector('#compose-view').style.display = 'none';
@@ -169,7 +176,7 @@ function switch_compose_emails_view(mode) {
     }
 }
 
-function getArchiveLink(email_content) {
+function create_archive_link(email_content) {
     const archive_link = document.createElement('a');
     archive_link.href = '#';
     archive_link.textContent = email_content.archived ? 'Unarchive' : "Archive";
