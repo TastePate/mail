@@ -13,18 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function load_mailbox(mailbox) {
-    document.querySelector('#emails-view').innerHTML =
-        `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
-
     if (mailbox === 'compose') {
-        switch_view('compose');
         load_compose();
     } else {
-        switch_view('emails');
         load_emails(mailbox);
     }
 }
-
 
 /*
 * Block for emails view. API, DOM, redner and so on
@@ -41,18 +35,24 @@ function load_emails(mailbox) {
 }
 
 function render_emails(mailbox, emails) {
-    const inbox_div = document.createElement('div');
+    const template = document.querySelector('#mailbox-template')
+    const clone = template.content.cloneNode(true);
+
+    clone.querySelector('.page-header').textContent = mailbox.charAt(0).toUpperCase() + mailbox.slice(1);
 
     if (emails.length === 0) {
-        inbox_div.innerHTML = 'No emails!'
+        const span = document.createElement('span');
+        span.textContent = 'No emails!';
+
+        clone.append(span);
     } else {
         emails.forEach((email) => {
             const render = render_email(email, mailbox);
-            inbox_div.append(render);
+            clone.append(render);
         });
     }
 
-    document.querySelector('#emails-view').append(inbox_div);
+    document.querySelector('#app-view').replaceChildren(clone);
 }
 
 function render_email(email, mailbox) {
@@ -111,8 +111,7 @@ function render_email_page(email, is_from_sent=false) {
         load_compose(email.sender, subject, body);
     }
 
-    document.querySelector('#emails-view').replaceChildren(clone);
-
+    document.querySelector('#app-view').replaceChildren(clone);
     set_email_as_read(email.id);
 }
 
@@ -124,7 +123,6 @@ function set_email_as_read(email_id) {
         })
     });
 }
-
 
 /*
 * Block for compose view. API, DOM, redner and so on
@@ -166,16 +164,6 @@ function send_email(recipient, subject, body) {
                 }
             })
         });
-}
-
-function switch_view(mode) {
-    if (mode === 'emails') {
-        document.querySelector('#emails-view').style.display = 'block';
-        document.querySelector('#compose-view').style.display = 'none';
-    } else if (mode === 'compose') {
-        document.querySelector('#emails-view').style.display = 'none';
-        document.querySelector('#compose-view').style.display = 'block';
-    }
 }
 
 function create_archive_link(email_content) {
