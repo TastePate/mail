@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
 function load_mailbox(mailbox) {
     document.querySelector('#emails-view').innerHTML =
         `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -20,12 +21,12 @@ function load_mailbox(mailbox) {
     if (mailbox === 'compose') {
         compose();
     } else {
-        emails(mailbox);
+        inbox(mailbox);
     }
 }
 
-function emails(mailbox) {
-    switchComposeEmailsView('emails');
+function inbox(mailbox) {
+    switch_compose_emails_view('emails');
     fetch(`/emails/${mailbox}`)
         .then(response => response.json())
         .then(emails => {
@@ -34,28 +35,6 @@ function emails(mailbox) {
                 inbox_div.innerHTML = 'No emails!'
             } else {
                 emails
-                    .toSorted((el1, el2) => {
-                        const date1 = Date.parse(el1.timestamp.replace(' ', 'T').slice(0, 19));
-                        const date2 = Date.parse(el2.timestamp.replace(' ', 'T').slice(0, 19));
-
-                        if (el1.read === el2.read) {
-                            if (date1 === date2) {
-                                return 0;
-                            } else {
-                                if (date1 > date2) {
-                                    return -1;
-                                } else {
-                                    return 1;
-                                }
-                            }
-                        } else {
-                            if (el2.read) {
-                                return -1;
-                            } else {
-                                return 1;
-                            }
-                        }
-                    })
                     .forEach((email_content) => {
                         const email_div = document.createElement('div');
                         email_div.style.border = "2px solid black";
@@ -63,29 +42,14 @@ function emails(mailbox) {
                         email_div.style.flexDirection = 'column';
 
                         const link = document.createElement('a');
-                        link.textContent = email_content.body;
+                        link.textContent = email_content.subject;
                         link.href = '#';
                         link.addEventListener('click', event => {
                            event.preventDefault();
-                           show_email(email_content);
+                           email_page(email_content, mailbox==='sent');
                         });
 
-                        const archive_link = document.createElement('a');
-                        archive_link.href = '#';
-                        archive_link.textContent = email_content.archived ? 'Remove from archive' : "Archive";
-                        archive_link.addEventListener('click', event => {
-                            event.preventDefault();
-                            fetch(`/emails/${email_content.id}`, {
-                                method: 'PUT',
-                                body: JSON.stringify({
-                                    'archived': !email_content.archived,
-                                })
-                            }).then(() => {
-                                load_mailbox(mailbox);
-                            });
-                        });
-
-
+                        const archive_link = getArchiveLink(email_content);
 
                         email_div.append(link);
                         email_div.insertAdjacentHTML('beforeend', `<span>${email_content.sender}</span>`);
@@ -106,7 +70,7 @@ function emails(mailbox) {
 }
 
 function compose(recipient='', subject='', body='') {
-    switchComposeEmailsView('compose');
+    switch_compose_emails_view('compose');
     document.querySelector('#compose-recipients').value = recipient;
     document.querySelector('#compose-subject').value = subject;
     document.querySelector('#compose-body').value = body;
@@ -122,15 +86,25 @@ function compose(recipient='', subject='', body='') {
                 body: document.querySelector('#compose-body').value,
             })
         })
-            .then(response => response.json())
+            .then(response => {
+                return response.json().then(data => {
+                    return {
+                        ok: response.ok,
+                        data: data
+                    }
+                })
+            })
             .then(result => {
-                console.log(result);
-                load_mailbox('compose');
+                if (!result.ok) {
+                    alert(result.data.error);
+                } else {
+                    load_mailbox('sent');
+                }
             });
     };
 }
 
-function show_email(email) {
+function email_page(email, is_from_sent=false) {
     let recipients = '';
     email.recipients.forEach((recipient) => {
         recipients += `<span>${recipient}</span>`
@@ -161,10 +135,17 @@ function show_email(email) {
             <div class="email-reply">
                 <span><a href="#" id="reply-link">Reply</a></span>
             </div> 
+            
+            <div id="archive-link"></div>
         </div>
     `;
+    
+    if (!is_from_sent) {
+        document.querySelector('#archive-link').append(getArchiveLink(email));
+    }
 
-    document.querySelector('#reply-link').onclick = () => {
+    document.querySelector('#reply-link').onclick = (event) => {
+        event.preventDefault();
         const subject = !email.subject.startsWith('Re:') ? 'Re: ' + email.subject : email.subject;
         const body = `\n\n\nOn ${email.timestamp} ${email.sender} wrote:\n\n${email.body}`;
         compose(email.sender, subject, body);
@@ -178,7 +159,7 @@ function show_email(email) {
     });
 }
 
-function switchComposeEmailsView(mode) {
+function switch_compose_emails_view(mode) {
     if (mode === 'emails') {
         document.querySelector('#emails-view').style.display = 'block';
         document.querySelector('#compose-view').style.display = 'none';
@@ -188,4 +169,22 @@ function switchComposeEmailsView(mode) {
     }
 }
 
+function getArchiveLink(email_content) {
+    const archive_link = document.createElement('a');
+    archive_link.href = '#';
+    archive_link.textContent = email_content.archived ? 'Unarchive' : "Archive";
+    archive_link.addEventListener('click', event => {
+        event.preventDefault();
+        fetch(`/emails/${email_content.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                'archived': !email_content.archived,
+            })
+        }).then(() => {
+            load_mailbox('inbox');
+        });
+    });
+
+    return archive_link;
+}
 
