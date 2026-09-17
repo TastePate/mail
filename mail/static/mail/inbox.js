@@ -98,7 +98,6 @@ function render_email_page(email, is_from_sent=false) {
     });
 
     clone.querySelector('.email-body').textContent = email.body;
-    clone.querySelector('.email-subject').textContent = email.subject;
 
     if (!is_from_sent) {
         clone.querySelector('#archive-link').append(create_archive_link(email));
@@ -129,15 +128,18 @@ function set_email_as_read(email_id) {
 */
 
 function load_compose(recipient='', subject='', body='') {
-    document.querySelector('#compose-recipients').value = recipient;
-    document.querySelector('#compose-subject').value = subject;
-    document.querySelector('#compose-body').value = body;
+    const template = document.querySelector('#compose-template');
+    const clone = template.content.cloneNode(true);
 
-    document.querySelector('#compose-form').onsubmit = function (event) {
+    clone.querySelector('#compose-recipients').value = recipient;
+    clone.querySelector('#compose-subject').value = subject;
+    clone.querySelector('#compose-body').value = body;
+
+    clone.querySelector('#compose-form').onsubmit = function (event) {
         event.preventDefault();
-        const response = send_email(document.querySelector('#compose-recipients').value,
-                            document.querySelector('#compose-subject').value,
-                            document.querySelector('#compose-body').value);
+        const response = send_email(clone.querySelector('#compose-recipients').value,
+                            clone.querySelector('#compose-subject').value,
+                            clone.querySelector('#compose-body').value);
         response.then(result => {
             if (result.ok) {
                 load_mailbox('sent');
@@ -146,6 +148,8 @@ function load_compose(recipient='', subject='', body='') {
             }
         });
     };
+
+    document.querySelector('#app-view').replaceChildren(clone);
 }
 
 function send_email(recipient, subject, body) {
