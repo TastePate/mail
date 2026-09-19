@@ -9,6 +9,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#compose').addEventListener('click',
         () => load_mailbox('compose'));
 
+    document.querySelector('.nav').addEventListener("mouseenter", () => {
+        document.querySelectorAll('.nav-elements > *').forEach(span => {
+            span.classList.toggle('open');
+        });
+    });
+
+    document.querySelector('.nav').addEventListener("mouseleave", () => {
+        document.querySelectorAll('.nav-elements > *').forEach(span => {
+            span.classList.toggle('open');
+        });
+    });
+
+    setup_menu_triangles();
+    write_greeting_words();
+    setup_mailbox_progress();
     load_mailbox('inbox');
 });
 
@@ -188,4 +203,83 @@ function create_archive_link(email_content) {
 
     return archive_link;
 }
+
+function setup_menu_triangles() {
+    document.querySelectorAll('.nav-elements > span').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            const rotation = Math.random() * 2 * Math.PI;
+            const points = [0, 1, 2].map(index => {
+                const angle = rotation + index * 2 * Math.PI / 3
+                    + (Math.random() - 0.5) * Math.PI / 9;
+                const radius = 34 + Math.random() * 14;
+                const x = 50 + Math.cos(angle) * radius;
+                const y = 50 + Math.sin(angle) * radius;
+                return `${x.toFixed(1)}% ${y.toFixed(1)}%`;
+            });
+
+            item.style.setProperty('--triangle-points', points.join(', '));
+        });
+    });
+}
+
+function setup_mailbox_progress() {
+    const mailbox = document.querySelector('.mailbox');
+    const progress = document.querySelector('.mailbox-progress');
+    if (!mailbox || !progress) return;
+    const fill = progress.querySelector('.mailbox-progress-fill');
+    if (!fill) return;
+
+    function updateProgress() {
+        const maxScroll = Math.max(0, mailbox.scrollHeight - mailbox.clientHeight);
+        const fraction = maxScroll === 0
+            ? 0
+            : Math.min(1, Math.max(0, mailbox.scrollTop / maxScroll));
+
+        progress.hidden = maxScroll === 0;
+        fill.style.transform = `scaleX(${fraction})`;
+        progress.setAttribute('aria-valuenow', Math.round(fraction * 100));
+    }
+
+    mailbox.addEventListener('scroll', updateProgress, {passive: true});
+    window.addEventListener('resize', updateProgress);
+    window.addEventListener('load', updateProgress, {once: true});
+    updateProgress();
+}
+
+function write_greeting_words() {
+    const output = document.querySelector('.have-a-nice.object');
+    if (!output) return;
+
+    const words = ['day!', 'night!', 'work!'];
+    let wordIndex = 0;
+    let letters = 0;
+    let deleting = false;
+
+    function type() {
+        const word = words[wordIndex];
+        output.textContent = word.slice(0, letters);
+
+        let delay;
+
+        if (!deleting && letters < word.length) {
+            letters++;
+            delay = 120;
+        } else if (!deleting) {
+            deleting = true;
+            delay = 1500;
+        } else if (letters > 0) {
+            letters--;
+            delay = 70;
+        } else {
+            deleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+            delay = 250;
+        }
+
+        setTimeout(type, delay);
+    }
+
+    type();
+}
+
 

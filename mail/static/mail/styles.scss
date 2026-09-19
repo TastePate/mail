@@ -1,0 +1,465 @@
+// This styles was written in another project.
+// To create this view I spent around 20 hours of my time
+// I wanted to learn a little deeper, so there is result of my work =)
+
+@use "sass:math";
+
+$nav-color: #505050;
+$main-color: #303030;
+
+$transition-time: 0.2s;
+$menu-elements-gap: 70px;
+$rotation-angle: 15deg;
+
+$transform-scale: 1.1;
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+body {
+    margin: 0;
+    font-family: "IBM Plex Sans", Arial, sans-serif;
+}
+
+.page {
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+
+    background-color: $main-color;
+}
+
+
+main {
+    position: relative;
+    box-sizing: border-box;
+    transition: transform $transition-time ease;
+    background-color: $main-color;
+
+    height: 100%;
+
+    .nav {
+        position: absolute;
+
+        top: -40%;
+        left: -90%;
+
+        background-color: $nav-color;
+
+        height: 100%;
+        width: 100%;
+
+        transform: rotate($rotation-angle);
+        transition: transform calc($transition-time * 2) ease, box-shadow $transition-time ease;
+
+        &:hover {
+            box-shadow:
+                    6px 16px 0 #858585,
+                    12px 32px 0 #C9C9C9;
+            transform: rotate($rotation-angle) scale($transform-scale);
+        }
+
+        .nav-elements {
+            font-size: 17px;
+            font-weight: 500;
+
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+
+            display: grid;
+
+            padding-right: 50px;
+            padding-bottom: 100px;
+
+            box-sizing: border-box;
+            height: 100%;
+            width: 100%;
+
+            align-items: center;
+            justify-content: end;
+
+            > * {
+                grid-area: 1 / 1;
+                position: relative;
+                isolation: isolate;
+                width: max-content;
+                color: #fff;
+                mix-blend-mode: difference;
+                visibility: hidden;
+                transition: transform $transition-time ease;
+                transform: translateY(0);
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    z-index: -1;
+                    top: 50%;
+                    left: 50%;
+                    width: max(160%, 135px);
+                    height: 100px;
+                    background: #858585;
+                    clip-path: polygon(var(--triangle-points, 50% 5%, 95% 95%, 5% 95%));
+                    transform: translate(-50%, -50%) scale(0);
+                    transition: transform 0.25s ease;
+                    pointer-events: none;
+                }
+
+                &:hover::before {
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+
+            & > .open {
+                visibility: visible;
+                transition: transform $transition-time ease;
+            }
+
+            @for $i from 1 through 5 {
+                & > .open:nth-child(#{$i + 1}) {
+                    transform: translateY((-3 + $i) * $menu-elements-gap);
+                }
+            }
+        }
+    }
+
+    .mailbox-wrapper {
+        position: absolute;
+        z-index: 1;
+        top: 10%;
+        left: 20%;
+
+        box-sizing: border-box;
+
+        height: 80%;
+        width: 75%;
+
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+
+        transform: skewX(calc(-1 * $rotation-angle));
+        transform-origin: top left;
+
+        .mailbox {
+            z-index: 1;
+
+            overflow-y: auto;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            box-sizing: border-box;
+            background: #C9C9C9;
+
+            transition: box-shadow 0.2s ease;
+
+            &:hover {
+                box-shadow:
+                    -12px -12px 0 #858585,
+                    -24px -24px 0 #383838;
+            }
+
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+
+            .mailbox-element {
+                display: grid;
+                grid-template-areas:
+                    "sender  sender  sender  ."
+                    "subject subject subject subject"
+                    ".       .       time       time";
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+
+                width: 90%;
+                flex: none;
+                isolation: isolate;
+                background: transparent;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    inset: -3px;
+                    z-index: 0;
+                    pointer-events: none;
+
+                    background: #F8F8F8;
+                    border: 3px solid #A8A8A8;
+
+                    transform: skewX(calc(-1 * $rotation-angle));
+                    transition: transform $transition-time ease;
+                }
+
+                > * {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                &:hover::before {
+                    transform: skewX(calc(-1 * $rotation-angle)) scale(1.02);
+                }
+
+                border-radius: 10px;
+
+                padding: 20px;
+                padding-left: 30px;
+                scale: 1;
+                transform: skewX(calc($rotation-angle));
+                transition: transform $transition-time ease;
+
+                .mail-subject {
+                    font-size: 16px;
+                    font-weight: 400;
+                    grid-area: subject;
+                }
+
+                .mail-sender {
+                    font-size: 16px;
+                    font-weight: 600;
+                    grid-area: sender;
+                }
+
+                .mail-timestamp {
+                    grid-area: time;
+                    justify-self: end;
+
+                    font-family: "IBM Plex Mono", monospace;
+                    font-size: 12px;
+                    font-weight: 400;
+                }
+            }
+        }
+
+        .mailbox-progress {
+            flex: none;
+            height: 9px;
+            overflow: hidden;
+            border: 1px solid #969696;
+            border-radius: 999px;
+            background: #555555;
+
+            &[hidden] {
+                display: none;
+            }
+
+            .mailbox-progress-fill {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border-radius: inherit;
+                background-color: #E8E8E8;
+                transform: scaleX(0);
+                transform-origin: left center;
+                transition: transform 0.1s linear;
+            }
+        }
+
+        .header {
+            position: relative;
+            isolation: isolate;
+            box-sizing: border-box;
+            align-self: flex-start;
+
+            transform: skewX($rotation-angle);
+            background: transparent;
+            color: #1B1B1B;
+
+            z-index: 0;
+
+            &::before,
+            &::after {
+                content: "";
+                height: 150px;
+                aspect-ratio: 2.5;
+                clip-path: polygon(
+                    30% 0,
+                    100% 70%,
+                    0 40%);
+                position: absolute;
+                top: -20px;
+                left: -110px;
+                transform: skewX(calc(-1 * $rotation-angle)) rotate(20deg);
+            }
+
+            &::before {
+                z-index: 1;
+                background: #D4D4D4;
+                border: 2px solid #888888;
+            }
+
+            &::after {
+                z-index: 0;
+                pointer-events: none;
+                background: linear-gradient(135deg, #C9C9C9, #858585 55%, #383838);
+                transform: translate(-40px, 0)
+                    skewX(calc(-1 * $rotation-angle)) rotate(20deg);
+            }
+
+            > h3 {
+                position: relative;
+                z-index: 2;
+                margin: 0;
+
+                transform: rotate(32deg);
+            }
+        }
+    }
+}
+
+.greeting {
+    position: absolute;
+    z-index: 0;
+    right: 0;
+    top: 0;
+
+    display: grid;
+    place-items: center;
+    width: calc(55% + 180px);
+    max-width: 100%;
+    height: 20%;
+    box-sizing: border-box;
+
+    .greeting-content {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: 56px;
+        width: 100%;
+    }
+
+    .greeting-content > .hello,
+    .greeting-content > .have-a-nice {
+        color: #fff;
+        font-size: clamp(12px, 1.1vw, 16px);
+        mix-blend-mode: difference;
+        white-space: nowrap;
+    }
+
+    .greeting-content > .hello {
+        justify-self: end;
+    }
+
+    .greeting-content > .have-a-nice {
+        justify-self: start;
+
+        .object {
+            display: inline-block;
+            min-width: 6ch;
+        }
+    }
+
+    .username {
+        position: relative;
+        isolation: isolate;
+        box-sizing: border-box;
+        min-width: clamp(280px, 27vw, 360px);
+        padding: 8px 70px;
+        text-align: center;
+        font-size: clamp(16px, 1.7vw, 24px);
+        line-height: 1.2;
+        white-space: nowrap;
+
+        .username-text {
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+            color: #fff;
+            mix-blend-mode: difference;
+        }
+
+        .have-a-nice.object {
+            background: white;
+        }
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            clip-path: polygon(0 0, 100% 0, 40% 100%);
+            pointer-events: none;
+        }
+
+        &::before {
+            z-index: 1;
+            background: #D4D4D4;
+        }
+
+        &::after {
+            z-index: 0;
+            top: -10px;
+            left: -30px;
+            background: linear-gradient(135deg, #C9C9C9, #858585 55%, #383838);
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .greeting .greeting-content {
+        column-gap: 40px;
+    }
+}
+
+@media (max-width: 650px) {
+    .greeting {
+        width: 100%;
+
+        .greeting-content {
+            box-sizing: border-box;
+            padding-inline: 10px;
+            column-gap: 32px;
+        }
+
+        .greeting-content > .hello,
+        .greeting-content > .have-a-nice {
+            font-size: 11px;
+        }
+
+        .username {
+            font-size: 14px;
+        }
+    }
+}
+
+@media (max-width: 540px) {
+    .greeting .greeting-content {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 8px;
+
+        > .hello {
+            grid-column: 1;
+            grid-row: 1;
+            justify-self: start;
+        }
+
+        > .have-a-nice {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: end;
+        }
+
+        > .username {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            justify-self: center;
+        }
+    }
+}
