@@ -9,71 +9,21 @@
         {% endblock %}
     </head>
     <body>
-<!--        <div class="container">-->
-<!--            {% block body %}-->
-<!--            {% endblock %}-->
-<!--        </div>-->
         <div class="page">
             <main>
                 <div class="nav">
                     <div class="nav-elements">
                         <span class="open">Menu</span>
-                        <span><a href="#">Inbox</a></span>
-                        <span><a href="#">Compose</a></span>
-                        <span><a href="#">Sent</a></span>
-                        <span><a href="#">Archived</a></span>
-                        <span><a href="#">Log Out</a></span>
+                        <span><a id="inbox" href="#">Inbox</a></span>
+                        <span><a id="compose" href="#">Compose</a></span>
+                        <span><a id="sent" href="#">Sent</a></span>
+                        <span><a id="archived" href="#">Archived</a></span>
+                        <span><a id="log-out" href="{% url 'logout' %}">Log Out</a></span>
                     </div>
                 </div>
                 <div class="mailbox-wrapper">
-                    <div class="header">
-                        <h3>Archived</h3>
-                    </div>
-                    <div class="mailbox">
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                        <div class="mailbox-element">
-                            <span class="mail-sender"><strong>жопанапоминатель</strong></span>
-                            <span class="mail-subject">Надо помыть жопу, опять ты забыл!</span>
-                            <small class="mail-timestamp">52 February, 14:88</small>
-                        </div>
-                    </div>
-                    <div class="mailbox-progress" role="progressbar" aria-label="Mailbox scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                        <span class="mailbox-progress-fill"></span>
-                    </div>
+                    {% block body %}
+                    {% endblock %}
                 </div>
             </main>
             <div class="greeting">

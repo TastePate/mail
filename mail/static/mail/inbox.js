@@ -53,7 +53,7 @@ function render_emails(mailbox, emails) {
     const template = document.querySelector('#mailbox-template')
     const clone = template.content.cloneNode(true);
 
-    clone.querySelector('.page-header').textContent = mailbox.charAt(0).toUpperCase() + mailbox.slice(1);
+    clone.querySelector('.header > h3').textContent = mailbox.charAt(0).toUpperCase() + mailbox.slice(1);
 
     if (emails.length === 0) {
         const span = document.createElement('span');
@@ -63,37 +63,37 @@ function render_emails(mailbox, emails) {
     } else {
         emails.forEach((email) => {
             const render = render_email(email, mailbox);
-            clone.append(render);
+            clone.querySelector('.mailbox').append(render);
         });
     }
 
-    document.querySelector('#app-view').replaceChildren(clone);
+
+    document.querySelector('.mailbox-wrapper').replaceChildren(clone);
 }
 
 function render_email(email, mailbox) {
     const email_div = document.createElement('div');
+    email_div.className = 'mailbox-element';
 
     const link = document.createElement('a');
-    link.textContent = email.subject;
     link.href = '#';
+
     link.addEventListener('click', event => {
        event.preventDefault();
        render_email_page(email, mailbox==='sent');
     });
 
-    const archive_link = create_archive_link(email);
+    // const archive_link = create_archive_link(email);
+
+    link.insertAdjacentHTML('beforeend', `<span class="mail-sender">${email.sender}</span>`);
+    link.insertAdjacentHTML('beforeend', `<span class="mail-subject">${email.subject}</span>`);
+    link.insertAdjacentHTML('beforeend', `<small class="mail-timestamp">${email.timestamp}</small>`);
+
+    // if (mailbox !== 'sent') {
+    //     email_div.append(archive_link);
+    // }
 
     email_div.append(link);
-    email_div.insertAdjacentHTML('beforeend', `<span>${email.sender}</span>`);
-    email_div.insertAdjacentHTML('beforeend', `<span>${email.timestamp}</span>`);
-    const read = email.read ? "Read" : "Didn't read";
-
-    email_div.insertAdjacentHTML('beforeend', `<span>${read}</span>`);
-
-    if (mailbox !== 'sent') {
-        email_div.append(archive_link);
-    }
-
     return email_div;
 }
 
