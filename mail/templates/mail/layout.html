@@ -10,6 +10,51 @@
     </head>
     <body>
         <div class="page">
+            <template id="mailbox-template">
+
+
+            </template>
+
+            <template id="compose-template">
+                <form id="compose-form">
+                    <div class="form-group">
+                        From: <input disabled class="form-control" value="{{ request.user.email }}">
+                    </div>
+                    <div class="form-group">
+                        To: <input id="compose-recipients" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="compose-subject" placeholder="Subject">
+                    </div>
+                    <textarea class="form-control" id="compose-body" placeholder="Body"></textarea>
+                    <input type="submit" class="btn btn-primary"/>
+                </form>
+            </template>
+
+            <template id="email-page-template">
+                <div class="email-page-container">
+                    <h2 class="email-subject"></h2>
+
+                    <div class="email-header">
+                        <span class="email-sender"></span>
+                        <span class="email-time"></span>
+                    </div>
+
+                    <div class="email-recipients">
+                        <span><strong>Recipients:</strong></span>
+                    </div>
+
+                    <div class="email-body">
+                        <span class="email-text"></span>
+                    </div>
+
+                    <div class="email-reply">
+                        <span><a href="#" id="reply-link">Reply</a></span>
+                    </div>
+
+                    <div id="archive-link"></div>
+                </div>
+            </template>
             <main>
                 <div class="nav">
                     <div class="nav-elements">
@@ -22,8 +67,17 @@
                     </div>
                 </div>
                 <div class="mailbox-wrapper">
-                    {% block body %}
-                    {% endblock %}
+                    <div class="header">
+                        <h3></h3>
+                    </div>
+                    <div class="mailbox">
+                        {% block body %}
+                        {% endblock %}
+                    </div>
+
+                    <div class="mailbox-progress" role="progressbar" aria-label="Mailbox scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <span class="mailbox-progress-fill"></span>
+                    </div>
                 </div>
             </main>
             <div class="greeting">
