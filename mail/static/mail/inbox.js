@@ -75,10 +75,6 @@ function render_email(email, mailbox) {
     const email_div = document.createElement('div');
     email_div.className = 'mailbox-element';
 
-    if (email.read) {
-        email_div.classList.add('read');
-    }
-
     email_div.addEventListener('click', event => {
        event.preventDefault();
        render_email_page(email, mailbox==='sent');
