@@ -80,15 +80,9 @@ function render_email(email, mailbox) {
        render_email_page(email, mailbox==='sent');
     });
 
-    // const archive_link = create_archive_link(email);
-
     email_div.insertAdjacentHTML('beforeend', `<span class="mail-sender">${email.sender}</span>`);
     email_div.insertAdjacentHTML('beforeend', `<span class="mail-subject">${email.subject}</span>`);
     email_div.insertAdjacentHTML('beforeend', `<small class="mail-timestamp">${email.timestamp}</small>`);
-
-    // if (mailbox !== 'sent') {
-    //     email_div.append(archive_link);
-    // }
 
     return email_div;
 }
@@ -96,6 +90,8 @@ function render_email(email, mailbox) {
 function render_email_page(email, is_from_sent=false) {
     const template = document.querySelector('#email-page-template');
     const clone = template.content.cloneNode(true);
+
+    document.querySelector('.header > h3').textContent = 'Mail';
 
     clone.querySelector('.email-subject').textContent = email.subject;
     clone.querySelector('.email-sender').textContent = email.sender;
@@ -108,7 +104,7 @@ function render_email_page(email, is_from_sent=false) {
         clone.querySelector('.email-recipients').append(span);
     });
 
-    clone.querySelector('.email-body').textContent = email.body;
+    clone.querySelector('.email-text').textContent = email.body;
 
     if (!is_from_sent) {
         clone.querySelector('#archive-link').append(create_archive_link(email));
@@ -141,6 +137,8 @@ function set_email_as_read(email_id) {
 function load_compose(recipient='', subject='', body='') {
     const template = document.querySelector('#compose-template');
     const clone = template.content.cloneNode(true);
+
+    document.querySelector('.header > h3').textContent = 'Compose';
 
     clone.querySelector('#compose-recipients').value = recipient;
     clone.querySelector('#compose-subject').value = subject;
@@ -221,25 +219,55 @@ function setup_menu_triangles() {
 function setup_mailbox_progress() {
     const mailbox = document.querySelector('.mailbox');
     const progress = document.querySelector('.mailbox-progress');
+
     if (!mailbox || !progress) return;
+
     const fill = progress.querySelector('.mailbox-progress-fill');
+
     if (!fill) return;
 
-    function updateProgress() {
-        const maxScroll = Math.max(0, mailbox.scrollHeight - mailbox.clientHeight);
-        const fraction = maxScroll === 0
-            ? 0
-            : Math.min(1, Math.max(0, mailbox.scrollTop / maxScroll));
+    function update_progress() {
+        const max_scroll =
+            mailbox.scrollHeight - mailbox.clientHeight;
 
-        progress.hidden = maxScroll === 0;
+        const has_overflow = max_scroll > 1;
+
+        progress.hidden = !has_overflow;
+
+        const fraction = has_overflow
+            ? Math.min(
+                1,
+                Math.max(0, mailbox.scrollTop / max_scroll)
+            )
+            : 0;
+
         fill.style.transform = `scaleX(${fraction})`;
-        progress.setAttribute('aria-valuenow', Math.round(fraction * 100));
+
+        progress.setAttribute(
+            'aria-valuenow',
+            Math.round(fraction * 100)
+        );
     }
 
-    mailbox.addEventListener('scroll', updateProgress, {passive: true});
-    window.addEventListener('resize', updateProgress);
-    window.addEventListener('load', updateProgress, {once: true});
-    updateProgress();
+    mailbox.addEventListener('scroll', update_progress, {
+        passive: true
+    });
+
+    window.addEventListener('resize', update_progress);
+
+    const mutation_observer = new MutationObserver(() => {
+        requestAnimationFrame(update_progress);
+    });
+
+    mutation_observer.observe(mailbox, {
+        childList: true,
+        subtree: true
+    });
+
+    const resize_observer = new ResizeObserver(update_progress);
+    resize_observer.observe(mailbox);
+
+    update_progress();
 }
 
 function write_greeting_words() {

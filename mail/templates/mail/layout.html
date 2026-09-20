@@ -27,7 +27,7 @@
                         <input class="form-control" id="compose-subject" placeholder="Subject">
                     </div>
                     <textarea class="form-control" id="compose-body" placeholder="Body"></textarea>
-                    <input type="submit" class="btn btn-primary"/>
+                    <input type="submit" class="btn btn-primary" value="Send"/>
                 </form>
             </template>
 
@@ -68,23 +68,30 @@
                 </div>
                 <div class="mailbox-wrapper">
                     <div class="header">
-                        <h3></h3>
+                        <h3>
+                            {% block page_heading %}
+                            {% endblock %}
+                        </h3>
                     </div>
                     <div class="mailbox">
                         {% block body %}
                         {% endblock %}
                     </div>
 
-                    <div class="mailbox-progress" role="progressbar" aria-label="Mailbox scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div hidden class="mailbox-progress" role="progressbar" aria-label="Mailbox scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                         <span class="mailbox-progress-fill"></span>
                     </div>
                 </div>
             </main>
             <div class="greeting">
                 <div class="greeting-content">
-                    <span class="hello">Hello,</span>
-                    <span class="username"><span class="username-text">test@gmail.com</span></span>
-                    <span class="have-a-nice">Have a nice, <span class="have-a-nice object">_</span></span>
+                    {% if request.user.is_authenticated %}
+                        <span class="hello">Hello,</span>
+                        <span class="username"><span class="username-text">{{ request.user.email }}</span></span>
+                        <span class="have-a-nice">Have a nice, <span class="have-a-nice object">_</span></span>
+                    {% else %}
+                        <span class="username username--guest" aria-hidden="true"></span>
+                    {% endif %}
                 </div>
             </div>
         </div>
