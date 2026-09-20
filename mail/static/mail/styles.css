@@ -168,6 +168,16 @@ main .mailbox-wrapper .mailbox .mailbox-element::before {
   transform: skewX(-15deg);
   transition: transform 0.2s ease;
 }
+main .mailbox-wrapper .mailbox .mailbox-element.read::before {
+  background: #B8B8B8;
+  border-color: #858585;
+}
+main .mailbox-wrapper .mailbox .mailbox-element.read {
+  color: #555555;
+}
+main .mailbox-wrapper .mailbox .mailbox-element.read .mail-sender {
+  font-weight: 400;
+}
 main .mailbox-wrapper .mailbox .mailbox-element > * {
   position: relative;
   z-index: 1;
@@ -557,11 +567,11 @@ main .mailbox-wrapper .header > h3 {
 .email-page-container {
   box-sizing: border-box;
   width: min(88%, 900px);
-  min-height: 100%;
+  height: 100%;
   padding: clamp(24px, 3vw, 40px);
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto auto minmax(180px, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: 18px;
   transform: skewX(15deg);
   background: #E8E8E8;
@@ -611,7 +621,8 @@ main .mailbox-wrapper .header > h3 {
 }
 .email-page-container .email-body {
   grid-column: 1/-1;
-  min-height: 180px;
+  overflow-y: auto;
+  min-height: 0;
   padding: 20px;
   background: #F8F8F8;
   border: 2px solid #A8A8A8;

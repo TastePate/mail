@@ -214,6 +214,19 @@ main {
                     transition: transform $transition-time ease;
                 }
 
+                &.read::before {
+                    background: #B8B8B8;
+                    border-color: #858585;
+                }
+
+                &.read {
+                    color: #555555;
+
+                    .mail-sender {
+                        font-weight: 400;
+                    }
+                }
+
                 > * {
                     position: relative;
                     z-index: 1;
@@ -791,7 +804,7 @@ main {
     .email-body {
         grid-column: 1 / -1;
 
-        overflow-y: auto
+        overflow-y: auto;
 
         min-height: 0;
         padding: 20px;
