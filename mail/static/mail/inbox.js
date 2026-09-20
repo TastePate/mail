@@ -75,6 +75,10 @@ function render_email(email, mailbox) {
     const email_div = document.createElement('div');
     email_div.className = 'mailbox-element';
 
+    if (email.read) {
+        email_div.classList.add('read');
+    }
+
     email_div.addEventListener('click', event => {
        event.preventDefault();
        render_email_page(email, mailbox==='sent');
@@ -146,9 +150,14 @@ function load_compose(recipient='', subject='', body='') {
 
     clone.querySelector('#compose-form').onsubmit = function (event) {
         event.preventDefault();
-        const response = send_email(clone.querySelector('#compose-recipients').value,
-                            clone.querySelector('#compose-subject').value,
-                            clone.querySelector('#compose-body').value);
+
+        const form = event.currentTarget;
+
+        const response = send_email(
+            form.querySelector('#compose-recipients').value,
+            form.querySelector('#compose-subject').value,
+            form.querySelector('#compose-body').value);
+
         response.then(result => {
             if (result.ok) {
                 load_mailbox('sent');
